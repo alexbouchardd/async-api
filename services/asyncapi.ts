@@ -1,8 +1,8 @@
 import * as hookdeck from "./hookdeck";
 
-const NAME_PREFIX = `async-api`;
+export const NAME_PREFIX = `async-api-`;
 
-const CALLBACK_SOURCE_NAME = `${NAME_PREFIX}-callback`;
+const CALLBACK_SOURCE_NAME = `${NAME_PREFIX}callback`;
 
 export async function getStatus() {
   const callbackSource = await hookdeck.retrieveSourceByName(
@@ -63,7 +63,7 @@ export async function createApi(payload: CreateApiPayload) {
 
 function createConnectionNames(name: string) {
   return {
-    source: `${NAME_PREFIX}-${name}`,
+    source: `${NAME_PREFIX}${name}`,
     connection: name,
     destination: name,
     callbackConnection: `${name}-callback`,

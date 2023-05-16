@@ -1,3 +1,4 @@
+import { NAME_PREFIX } from "@/services/asyncapi";
 import styles from "./page.module.css";
 import {
   retrieveConnectionsForAPI,
@@ -7,7 +8,7 @@ import {
 } from "@/services/hookdeck";
 
 export default async function APIView({ params }: { params: { api: string } }) {
-  const source = await retrieveSourceByName(`async-api-${params.api}`);
+  const source = await retrieveSourceByName(`${NAME_PREFIX}${params.api}`);
 
   if (!source) {
     return <p>404</p>;
@@ -21,7 +22,7 @@ export default async function APIView({ params }: { params: { api: string } }) {
     (connection) => connection.name === params.api
   );
   const callback_connection = connections.find(
-    (connection) => connection.source.name === `async-api-callback`
+    (connection) => connection.source.name === `${NAME_PREFIX}callback`
   );
 
   const retry_rule = input_connection?.resolved_rules.find(
@@ -30,7 +31,7 @@ export default async function APIView({ params }: { params: { api: string } }) {
 
   return (
     <main className={styles.main}>
-      <h1>{source.name.split("async-api-")[0]}</h1>
+      <h1>{source.name.split(NAME_PREFIX)[0]}</h1>
       <h2>Configs</h2>
       <h3>API Replacement URL</h3>
       <p>{source.url}</p>
