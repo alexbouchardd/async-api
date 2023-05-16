@@ -6,6 +6,7 @@ function fetchHookdeck(path: string, init: RequestInit = {}) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.HOOKDECK_API_KEY}`,
     },
+    cache: "no-store",
   });
 }
 

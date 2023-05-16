@@ -6,22 +6,26 @@ import {
 } from "@/services/hookdeck";
 
 export default async function APIView({ params }: { params: { api: string } }) {
-  const source = await retrieveSourceByName(params.api);
+  const source = await retrieveSourceByName(`async-api-${params.api}`);
+
+  if (!source) {
+    return <p>404</p>;
+  }
+
   const connections = await retrieveConnectionsForAPI(params.api);
+
   const events = await retrieveEventList(source.id);
 
   const input_connection = connections.find(
-    (connection) => connection.name === source.name
+    (connection) => connection.name === params.api
   );
   const callback_connection = connections.find(
-    (connection) => connection.source.name === `callback`
+    (connection) => connection.source.name === `async-api-callback`
   );
 
   const retry_rule = input_connection?.resolved_rules.find(
     (rule) => rule.type === "retry"
   );
-
-  console.log(input_connection);
 
   return (
     <main className={styles.main}>
