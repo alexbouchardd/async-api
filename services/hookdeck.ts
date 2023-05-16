@@ -233,8 +233,15 @@ export type FilterRule = {
   query?: ConnectionFilterProperty;
   path?: ConnectionFilterProperty;
 };
+export type TransformRule = {
+  type: "transform";
+  transformation: {
+    code: string;
+    name: string;
+  };
+};
 
-type Rule = RetryRule | FilterRule;
+type Rule = RetryRule | FilterRule | TransformRule;
 
 interface Connection {
   id: string;

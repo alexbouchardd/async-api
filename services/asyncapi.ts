@@ -35,7 +35,7 @@ type CreateApiPayload = {
 /**
  * Create new async API
  * - create new connection to API
- * - create new callback destination with filter
+ * - create new callback destination with filter and transformation
  */
 export async function createApi(payload: CreateApiPayload) {
   const names = createConnectionNames(payload.name);
@@ -53,7 +53,14 @@ export async function createApi(payload: CreateApiPayload) {
     rules: [
       {
         type: "filter",
-        body: { connection: { source: { name: names.source } } },
+        headers: { "x-async-api-source-name": names.source },
+      },
+      {
+        type: "transform",
+        transformation: {
+          name: `${NAME_PREFIX}transform-callback`,
+          code: `addHandler('transform', (req) => { req.headers['x-async-api-source-name'] = req.body.connection.source.name; req.body = req.body.attempt_response; return req; })`,
+        },
       },
     ],
   });
