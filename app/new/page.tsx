@@ -1,5 +1,4 @@
 import { revalidatePath } from "next/cache";
-import { Counter } from "@/components/counter";
 import * as hookdeck from "@/services/hookdeck";
 import * as asyncApi from "@/services/asyncapi";
 import styles from "./page.module.css";
@@ -45,8 +44,6 @@ export default async function New() {
 
         <button type="submit">Add</button>
       </form>
-
-      <Counter />
     </main>
   );
 }

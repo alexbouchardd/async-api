@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { retrieveSources } from "@/services/hookdeck";
 import styles from "./page.module.css";
 import Logs from "@/components/Logs";
+import { NAME_PREFIX } from "@/services/asyncapi";
 
-export default function Home() {
+export default async function Home() {
+  const sources = await retrieveSources();
   return (
     <main className={styles.main}>
       <section>
@@ -15,7 +17,18 @@ export default function Home() {
           <Logs />
         </div>
       </section>
-      <section>Search</section>
+      <section>
+        Search<button>Create</button>
+        {sources.map((source) => (
+          <a
+            key={source.id}
+            className={styles.sourceCard}
+            href={`/${source.name.split(NAME_PREFIX)[1]}`}
+          >
+            {source.name.split(NAME_PREFIX)[1]}
+          </a>
+        ))}
+      </section>
     </main>
   );
 }

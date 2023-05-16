@@ -19,14 +19,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={space_grotesk.className}>
         <nav className={styles.nav}>
-          <Image
-            src="/vercel.svg"
-            alt="Vercel Logo"
-            className={styles.vercelLogo}
-            width={100}
-            height={24}
-            priority
-          />
+          <a href="/">
+            <Image
+              src="/vercel.svg"
+              alt="Vercel Logo"
+              className={styles.vercelLogo}
+              width={100}
+              height={24}
+              priority
+            />
+          </a>
           <div>
             <a>Docs</a>
             <a>Github</a>
