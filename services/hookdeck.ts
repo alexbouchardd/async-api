@@ -220,13 +220,13 @@ interface Destination {
 
 type ConnectionFilterProperty = string | number | boolean | "null" | object;
 type RetryStrategy = "linear" | "exponential";
-type RetryRule = {
+export type RetryRule = {
   type: "retry";
   strategy: RetryStrategy;
   interval: number;
   count: number;
 };
-type FilterRule = {
+export type FilterRule = {
   type: "filter";
   headers?: ConnectionFilterProperty;
   body?: ConnectionFilterProperty;

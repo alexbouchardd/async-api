@@ -3,6 +3,7 @@ import {
   retrieveConnectionsForAPI,
   retrieveSourceByName,
   retrieveEventList,
+  RetryRule,
 } from "@/services/hookdeck";
 
 export default async function APIView({ params }: { params: { api: string } }) {
@@ -25,11 +26,11 @@ export default async function APIView({ params }: { params: { api: string } }) {
 
   const retry_rule = input_connection?.resolved_rules.find(
     (rule) => rule.type === "retry"
-  );
+  ) as RetryRule;
 
   return (
     <main className={styles.main}>
-      <h1>{source.name}</h1>
+      <h1>{source.name.split("async-api-")[0]}</h1>
       <h2>Configs</h2>
       <h3>API Replacement URL</h3>
       <p>{source.url}</p>
