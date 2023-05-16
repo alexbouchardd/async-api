@@ -1,10 +1,47 @@
-.main {
+.nav {
+  width: 100%;
+  padding: 24px;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  padding: 6rem;
+}
+
+.nav a {
+  margin-left: 24px;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   min-height: 100vh;
+}
+
+.main section {
+  padding: 24px;
+}
+
+.title {
+  margin-top: 60px;
+}
+
+.subtitle {
+  margin-top: 24px;
+  opacity: 0.75;
+}
+
+.logLists {
+  padding-top: 60px;
+}
+
+.logLists ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.logLists li {
+  list-style-type: none;
+  margin: 0;
+  padding: 8px 0px 8px 0px;
 }
 
 .description {
@@ -97,7 +134,7 @@
 
 .center::before,
 .center::after {
-  content: '';
+  content: "";
   left: 50%;
   position: absolute;
   filter: blur(45px);
