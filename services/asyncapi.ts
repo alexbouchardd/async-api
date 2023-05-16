@@ -1,4 +1,5 @@
 import * as hookdeck from "./hookdeck";
+import * as proxy from "./proxy";
 
 export const NAME_PREFIX = `async-api-`;
 
@@ -40,30 +41,37 @@ type CreateApiPayload = {
 export async function createApi(payload: CreateApiPayload) {
   const names = createConnectionNames(payload.name);
 
-  await hookdeck.createConnection({
-    name: names.connection,
-    source: { name: names.source },
-    destination: { name: names.destination, url: payload.apiUrl },
-  });
+  const [apiConnection] = await Promise.all([
+    hookdeck.createConnection({
+      name: names.connection,
+      source: { name: names.source },
+      destination: { name: names.destination, url: payload.apiUrl },
+    }),
 
-  await hookdeck.createConnection({
-    name: names.callbackConnection,
-    source: { name: CALLBACK_SOURCE_NAME },
-    destination: { name: names.callbackDestination, url: payload.callbackUrl },
-    rules: [
-      {
-        type: "filter",
-        headers: { "x-async-api-source-name": names.source },
+    await hookdeck.createConnection({
+      name: names.callbackConnection,
+      source: { name: CALLBACK_SOURCE_NAME },
+      destination: {
+        name: names.callbackDestination,
+        url: payload.callbackUrl,
       },
-      {
-        type: "transform",
-        transformation: {
-          name: `${NAME_PREFIX}transform-callback`,
-          code: `addHandler('transform', (req) => { req.headers['x-async-api-source-name'] = req.body.connection.source.name; req.body = req.body.attempt_response; return req; })`,
+      rules: [
+        {
+          type: "filter",
+          headers: { "x-async-api-source-name": names.source },
         },
-      },
-    ],
-  });
+        {
+          type: "transform",
+          transformation: {
+            name: `${NAME_PREFIX}transform-callback`,
+            code: `addHandler('transform', (req) => { req.headers['x-async-api-source-name'] = req.body.connection.source.name; req.body = req.body.attempt_response; return req; })`,
+          },
+        },
+      ],
+    }),
+  ]);
+
+  await proxy.cacheApi(payload.name, apiConnection.source.url);
 }
 
 // ===== Helpers =====
