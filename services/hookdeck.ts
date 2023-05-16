@@ -1,3 +1,5 @@
+import qs from "qs";
+
 function fetchHookdeck(path: string, init: RequestInit = {}) {
   return fetch(`${process.env.HOOKDECK_API_URL}/2023-01-01${path}`, {
     ...init,
@@ -140,8 +142,28 @@ export async function retrieveEventList(source_id: string) {
   return (eventsData?.models ?? []) as Event[];
 }
 
+export async function retrieveDestinationList(ids: string[]) {
+  const search = qs.stringify(
+    { id: ids },
+    {
+      encodeValuesOnly: true,
+      strictNullHandling: true,
+    }
+  );
+
+  const response = await fetchHookdeck(`/destinations?${search}`, {
+    method: "GET",
+  });
+
+  if (!response.ok) throw new Error();
+
+  const eventsData = (await response.json()) as any;
+
+  return (eventsData?.models ?? []) as Destination[];
+}
+
 // Types
-interface Source {
+export interface Source {
   id: string;
   team_id: string;
   name: string;
@@ -162,27 +184,7 @@ interface ShortEventData {
 
 type EventStatus = "SCHEDULED" | "QUEUED" | "HOLD" | "SUCCESSFUL" | "FAILED";
 
-interface Event {
-  id: string;
-  team_id: string;
-  webhook_id: string;
-  source_id: string;
-  destination_id: string;
-  event_data_id: string;
-  request_id: string;
-  attempts: number;
-  data?: ShortEventData | null;
-  last_attempt_at: string;
-  next_attempt_at: string;
-  response_status: number;
-  status: EventStatus;
-  successful_at: string;
-  cli_id: string;
-  updated_at: string;
-  created_at: string;
-}
-
-interface Event {
+export interface Event {
   id: string;
   team_id: string;
   webhook_id: string;
@@ -204,7 +206,7 @@ interface Event {
 
 type DestinationRateLimitPeriod = "second" | "minute" | "hour";
 
-interface Destination {
+export interface Destination {
   id: string;
   team_id: string;
   name: string;

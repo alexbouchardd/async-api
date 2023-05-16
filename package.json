@@ -14,8 +14,12 @@
     "@types/react-dom": "18.2.4",
     "@vercel/kv": "^0.2.1",
     "next": "13.4.2",
+    "qs": "^6.11.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "typescript": "5.0.4"
+  },
+  "devDependencies": {
+    "@types/qs": "^6.9.7"
   }
 }

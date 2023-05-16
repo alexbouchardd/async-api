@@ -3,9 +3,9 @@ import styles from "./page.module.css";
 import {
   retrieveConnectionsForAPI,
   retrieveSourceByName,
-  retrieveEventList,
   RetryRule,
 } from "@/services/hookdeck";
+import * as asyncApi from "@/services/asyncapi";
 
 export default async function APIView({ params }: { params: { api: string } }) {
   const source = await retrieveSourceByName(`${NAME_PREFIX}${params.api}`);
@@ -14,9 +14,9 @@ export default async function APIView({ params }: { params: { api: string } }) {
     return <p>404</p>;
   }
 
-  const connections = await retrieveConnectionsForAPI(params.api);
+  const log = await asyncApi.getLog(params.api, source.id);
 
-  const events = await retrieveEventList(source.id);
+  const connections = await retrieveConnectionsForAPI(params.api);
 
   const input_connection = connections.find(
     (connection) => connection.name === params.api
@@ -48,8 +48,8 @@ export default async function APIView({ params }: { params: { api: string } }) {
       </p>
 
       <h2>Logs</h2>
-      {events.map((event) => (
-        <p key={event.id}>{event.id}</p>
+      {log.map((logLine) => (
+        <p key={logLine.id}>{logLine.url}</p>
       ))}
     </main>
   );

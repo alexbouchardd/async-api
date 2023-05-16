@@ -39,7 +39,7 @@ type CreateApiPayload = {
  * - create new callback destination with filter and transformation
  */
 export async function createApi(payload: CreateApiPayload) {
-  const names = createConnectionNames(payload.name);
+  const names = composeConnectionNames(payload.name);
 
   const [apiConnection] = await Promise.all([
     hookdeck.createConnection({
@@ -74,14 +74,64 @@ export async function createApi(payload: CreateApiPayload) {
   await proxy.cacheApi(payload.name, apiConnection.source.url);
 }
 
+export async function getLog(api: string, sourceId: string) {
+  const events = await hookdeck.retrieveEventList(sourceId);
+  const destinationsSet = new Set<string>();
+  events.forEach((event) => {
+    destinationsSet.add(event.destination_id);
+  });
+  const destinations = await hookdeck.retrieveDestinationList(
+    Array.from(destinationsSet)
+  );
+  const destinationsMap = destinations.reduce((map, destination) => {
+    map.set(destination.id, destination);
+    return map;
+  }, new Map<string, hookdeck.Destination>());
+
+  return events
+    .map((event) => {
+      const destination = destinationsMap.get(event.destination_id);
+      if (!destination) return null;
+      if (!event.data) return null;
+      return composeLogLine({ api, event, destination });
+    })
+    .filter(Boolean) as LogLine[];
+}
+
 // ===== Helpers =====
 
-function createConnectionNames(name: string) {
+function composeConnectionNames(name: string) {
   return {
     source: `${NAME_PREFIX}${name}`,
     connection: name,
     destination: name,
     callbackConnection: `${name}-callback`,
     callbackDestination: `${name}-callback`,
+  };
+}
+
+export type LogLine = { id: string; api: string; url: string };
+
+function composeLogLine({
+  api,
+  event,
+  destination,
+}: {
+  api: string;
+  event: hookdeck.Event;
+  destination: hookdeck.Destination;
+}): LogLine {
+  const url = new URL(destination.url as string);
+  url.pathname = url.pathname + event.data?.path;
+  const searchParams = new URLSearchParams(url.search);
+  Object.entries(event.data?.parsed_query ?? {}).forEach(([key, value]) => {
+    searchParams.set(key, value);
+  });
+  url.search = searchParams.toString();
+
+  return {
+    id: event.id,
+    api,
+    url: url.toString(),
   };
 }
