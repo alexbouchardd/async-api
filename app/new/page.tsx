@@ -1,27 +1,33 @@
-import styles from "./page.module.css";
+import { revalidatePath } from "next/cache";
 import { Counter } from "@/components/counter";
-import { retrieveSources } from "@/services/hookdeck";
+import * as hookdeck from "@/services/hookdeck";
+import * as asyncApi from "@/services/asyncapi";
+import styles from "./page.module.css";
 
 export default async function New() {
-  const sources = await retrieveSources();
+  const sources = await hookdeck.retrieveSources();
 
-  async function add(data: FormData) {
+  async function createApi(data: FormData) {
     "use server";
 
-    const name = data.get("name");
-    const apiUrl = data.get("apiUrl");
-    const callbackUrl = data.get("callbackUrl");
+    const name = data.get("name") as string;
+    const apiUrl = data.get("apiUrl") as string;
+    const callbackUrl = data.get("callbackUrl") as string;
 
-    console.log({ name, apiUrl, callbackUrl });
+    await asyncApi.createApi({ name, apiUrl, callbackUrl });
+
+    revalidatePath("/new");
   }
 
   return (
     <main className={styles.main}>
-      {sources.map((source) => {
-        return <div key={source.id}>{source.name}</div>;
-      })}
+      <div>
+        {sources.map((source) => {
+          return <div key={source.id}>{source.name}</div>;
+        })}
+      </div>
 
-      <form className={styles.form} action={add}>
+      <form className={styles.form} action={createApi}>
         <label className={styles.label}>
           <span>Name</span>
           <input name="name" />
