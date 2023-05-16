@@ -14,7 +14,7 @@ export default async function APIView({ params }: { params: { api: string } }) {
     return <p>404</p>;
   }
 
-  const log = await asyncApi.getLog(params.api, source.id);
+  const log = await asyncApi.getLog(source.id);
 
   const connections = await retrieveConnectionsForAPI(params.api);
 
@@ -49,7 +49,9 @@ export default async function APIView({ params }: { params: { api: string } }) {
 
       <h2>Logs</h2>
       {log.map((logLine) => (
-        <p key={logLine.id}>{logLine.url}</p>
+        <p key={logLine.id}>
+          {logLine.method} {logLine.url}
+        </p>
       ))}
     </main>
   );

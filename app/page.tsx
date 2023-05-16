@@ -1,10 +1,13 @@
-import { retrieveSources } from "@/services/hookdeck";
 import styles from "./page.module.css";
+import { retrieveSources } from "@/services/hookdeck";
 import Logs from "@/components/Logs";
+import * as asyncApi from "@/services/asyncapi";
 import { NAME_PREFIX } from "@/services/asyncapi";
 
 export default async function Home() {
   const sources = await retrieveSources();
+  const log = await asyncApi.getAllLog();
+
   return (
     <main className={styles.main}>
       <section>
@@ -13,10 +16,20 @@ export default async function Home() {
           Turn your slow or unreliable APIs unto an async API. Fire your request
           and listen for a webhook callback when the API call as succeeded.
         </p>
+
+        <div>
+          {log.map((logLine) => (
+            <p key={logLine.id}>
+              {logLine.method} {logLine.url}
+            </p>
+          ))}
+        </div>
+
         <div className={styles.logLists}>
           <Logs />
         </div>
       </section>
+
       <section>
         Search<button>Create</button>
         {sources.map((source) => (
