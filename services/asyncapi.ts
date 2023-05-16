@@ -121,8 +121,9 @@ function composeLogLine({
   event: hookdeck.Event;
   destination: hookdeck.Destination;
 }): LogLine {
+  console.log({ event, destination });
   const url = new URL(destination.url as string);
-  url.pathname = url.pathname + event.data?.path;
+  url.pathname = (url.pathname === "/" ? "" : url.pathname) + event.data?.path;
   const searchParams = new URLSearchParams(url.search);
   Object.entries(event.data?.parsed_query ?? {}).forEach(([key, value]) => {
     searchParams.set(key, value);
