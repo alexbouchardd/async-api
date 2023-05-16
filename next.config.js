@@ -5,6 +5,9 @@ const nextConfig = {
     HOOKDECK_API_KEY: process.env.HOOKDECK_API_KEY,
   },
   poweredByHeader: false,
+  experimental: {
+    serverActions: true,
+  },
 };
 
 module.exports = nextConfig;
