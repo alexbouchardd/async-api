@@ -16,6 +16,11 @@
   margin: 0;
 }
 
+input,
+button {
+  font-family: inherit !important;
+}
+
 html,
 body {
   max-width: 100vw;
