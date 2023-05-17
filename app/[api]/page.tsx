@@ -1,3 +1,4 @@
+import Logs from "@/components/Logs";
 import styles from "./../page.module.css";
 import {
   retrieveConnectionsForAPI,
@@ -12,8 +13,6 @@ export default async function APIView({ params }: { params: { api: string } }) {
   if (!source) {
     return <p>404</p>;
   }
-
-  // const log = await asyncApi.getLog(source.id);
 
   const connections = await retrieveConnectionsForAPI(params.api);
 
@@ -38,9 +37,9 @@ export default async function APIView({ params }: { params: { api: string } }) {
             <strong>{input_connection?.destination.url}</strong> with{" "}
             <strong>{url}</strong>
           </p>
-          {/* <div className={styles.logLists}>
+          <div className={styles.logLists}>
             <Logs />
-          </div> */}
+          </div>
         </div>
       </section>
       <section>
