@@ -1,7 +1,9 @@
+"use server";
+
+import { NAME_PREFIX } from "@/util";
 import * as hookdeck from "./hookdeck";
 import * as proxy from "./proxy";
-
-export const NAME_PREFIX = `async-api-`;
+import { redirect } from "next/navigation";
 
 const CALLBACK_SOURCE_NAME = `${NAME_PREFIX}callback`;
 
@@ -31,6 +33,7 @@ type CreateApiPayload = {
   name: string;
   apiUrl: string;
   callbackUrl: string;
+  rateLimit?: number;
 };
 
 /**
@@ -45,7 +48,21 @@ export async function createApi(payload: CreateApiPayload) {
     hookdeck.createConnection({
       name: names.connection,
       source: { name: names.source },
-      destination: { name: names.destination, url: payload.apiUrl },
+      destination: {
+        name: names.destination,
+        url: payload.apiUrl,
+        ...(payload.rateLimit
+          ? { rate_limit: payload.rateLimit, rate_limit_period: "minute" }
+          : {}),
+      },
+      rules: [
+        {
+          type: "retry",
+          strategy: "linear",
+          interval: 1000 * 60,
+          count: 3,
+        } as hookdeck.RetryRule,
+      ],
     }),
 
     await hookdeck.createConnection({
@@ -79,7 +96,10 @@ export async function getLog(sourceId: string) {
   return getLogFromEvents(events);
 }
 
-export async function getAllLog(): Promise<LogLine[]> {
+export async function getAllLog(
+  limit: number,
+  prev?: string
+): Promise<LogLine[]> {
   const sources = await hookdeck.retrieveSources();
   const asyncApiSources = sources.filter(
     (source) =>
@@ -89,7 +109,9 @@ export async function getAllLog(): Promise<LogLine[]> {
 
   const events = (
     await Promise.all(
-      asyncApiSources.map((source) => hookdeck.retrieveEventList(source.id))
+      asyncApiSources.map((source) =>
+        hookdeck.retrieveEventList(source.id, limit, prev)
+      )
     )
   )
     .flat()
@@ -100,6 +122,24 @@ export async function getAllLog(): Promise<LogLine[]> {
   return getLogFromEvents(events);
 }
 
+export async function createApiFromForm(data: FormData) {
+  "use server";
+
+  const name = data.get("name") as string;
+  const apiUrl = data.get("apiUrl") as string;
+  const callbackUrl = data.get("callbackUrl") as string;
+  const rateLimit = data.get("rateLimit") as string;
+
+  await createApi({
+    name,
+    apiUrl,
+    callbackUrl,
+    rateLimit: rateLimit ? parseInt(rateLimit) : undefined,
+  });
+
+  redirect(`/${name}`);
+}
+
 // ===== Helpers =====
 
 function composeConnectionNames(name: string) {
@@ -107,7 +147,7 @@ function composeConnectionNames(name: string) {
     source: `${NAME_PREFIX}${name}`,
     connection: name,
     destination: name,
-    callbackConnection: `${name}-callback`,
+    callbackConnection: name,
     callbackDestination: `${name}-callback`,
   };
 }
@@ -141,9 +181,10 @@ function composeLogLine({
     id: event.id,
     api,
     url: url.toString(),
-    method: event.data?.headers[
-      "x-hookdeck-original-method"
-    ] as LogLine["method"],
+    method:
+      (event.data?.headers[
+        "x-hookdeck-original-method"
+      ] as LogLine["method"]) || "POST",
     createdAt: event.created_at,
   };
 }

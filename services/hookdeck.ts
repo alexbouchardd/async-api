@@ -1,3 +1,4 @@
+import { NAME_PREFIX } from "@/util";
 import qs from "qs";
 
 function fetchHookdeck(path: string, init: RequestInit = {}) {
@@ -41,6 +42,23 @@ export async function retrieveSources() {
   const sourcesData = (await response.json()) as any;
 
   return (sourcesData?.models ?? []) as Source[];
+}
+
+export async function retrieveConnections() {
+  const response = await fetchHookdeck(
+    `/connections?full_name=${NAME_PREFIX}`,
+    {
+      method: "GET",
+    }
+  );
+
+  if (!response.ok) throw new Error();
+
+  const data = (await response.json()) as any;
+
+  return (data?.models.filter(
+    (model: Connection) => model.source.name !== `${NAME_PREFIX}callback`
+  ) ?? []) as Connection[];
 }
 
 export async function retrieveSourceByName(name: string) {
@@ -122,13 +140,18 @@ export async function updateNotificationWebhook(payload: NotificationWebhook) {
   return response.json() as Promise<NotificationWebhook>;
 }
 
-export async function retrieveEventList(source_id: string) {
+export async function retrieveEventList(
+  source_id: string,
+  limit?: number,
+  prev?: string
+) {
   const url =
     "/events?" +
     new URLSearchParams({
       source_id,
       include: "data",
-      limit: "10",
+      limit: limit ? String(limit) : "10",
+      ...(prev ? { prev } : {}),
     }).toString();
 
   const response = await fetchHookdeck(url, {
@@ -245,7 +268,7 @@ export type TransformRule = {
 
 type Rule = RetryRule | FilterRule | TransformRule;
 
-interface Connection {
+export interface Connection {
   id: string;
   name: string;
   team_id: string;

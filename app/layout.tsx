@@ -21,17 +21,36 @@ export default function RootLayout({
         <nav className={styles.nav}>
           <a href="/">
             <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
+              src="/AsyncAPI.svg"
+              alt="AsyncAPI Logo"
               className={styles.vercelLogo}
-              width={100}
+              width={108}
               height={24}
               priority
+              style={{ verticalAlign: "middle" }}
             />
           </a>
           <div>
-            <a>Docs</a>
-            <a>Github</a>
+            <a>
+              Docs
+              <Image
+                src="/arrow-icon.svg"
+                alt="AsyncAPI Logo"
+                width={20}
+                height={20}
+                priority
+              />
+            </a>
+            <a>
+              Github
+              <Image
+                src="/arrow-icon.svg"
+                alt="AsyncAPI Logo"
+                width={20}
+                height={20}
+                priority
+              />
+            </a>
           </div>
         </nav>
         {children}

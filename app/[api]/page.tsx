@@ -1,11 +1,10 @@
-import { NAME_PREFIX } from "@/services/asyncapi";
-import styles from "./page.module.css";
+import styles from "./../page.module.css";
 import {
   retrieveConnectionsForAPI,
   retrieveSourceByName,
   RetryRule,
 } from "@/services/hookdeck";
-import * as asyncApi from "@/services/asyncapi";
+import { NAME_PREFIX } from "@/util";
 
 export default async function APIView({ params }: { params: { api: string } }) {
   const source = await retrieveSourceByName(`${NAME_PREFIX}${params.api}`);
@@ -14,7 +13,7 @@ export default async function APIView({ params }: { params: { api: string } }) {
     return <p>404</p>;
   }
 
-  const log = await asyncApi.getLog(source.id);
+  // const log = await asyncApi.getLog(source.id);
 
   const connections = await retrieveConnectionsForAPI(params.api);
 
@@ -25,34 +24,57 @@ export default async function APIView({ params }: { params: { api: string } }) {
     (connection) => connection.source.name === `${NAME_PREFIX}callback`
   );
 
-  const retry_rule = input_connection?.resolved_rules.find(
-    (rule) => rule.type === "retry"
-  ) as RetryRule;
+  const url = `${process.env.NEXT_PUBLIC_VERCEL_URL}/
+            ${source.name.split(NAME_PREFIX)[1]}/proxy`;
 
   return (
     <main className={styles.main}>
-      <h1>{source.name.split(NAME_PREFIX)[0]}</h1>
-      <h2>Configs</h2>
-      <h3>API Replacement URL</h3>
-      <p>{source.url}</p>
-      <h3>Callback URL</h3>
-      <p>{callback_connection?.destination.url}</p>
-      <h3>Retry</h3>
-      <p>
-        {retry_rule?.strategy} {retry_rule?.interval}
-      </p>
-      <h3>Throttle</h3>
-      <p>
-        {input_connection?.destination.rate_limit} /
-        {input_connection?.destination.rate_limit_period}
-      </p>
-
-      <h2>Logs</h2>
-      {log.map((logLine) => (
-        <p key={logLine.id}>
-          {logLine.method} {logLine.url}
-        </p>
-      ))}
+      <section>
+        <div style={{ maxWidth: "540px", position: "fixed" }}>
+          <h1 className={styles.title}>{source.name.split(NAME_PREFIX)[1]}</h1>
+          <p className={styles.subtitle}>
+            Configure your API to be async. Replace OpenAI API endpoint{" "}
+            <strong>{input_connection?.destination.url}</strong> with{" "}
+            <strong>{url}</strong>
+          </p>
+          {/* <div className={styles.logLists}>
+            <Logs />
+          </div> */}
+        </div>
+      </section>
+      <section>
+        <div className={styles.sourceCard}>
+          <div>
+            <span className={styles.sourceCardText}>Replacement API URL</span>
+            <span className={styles.sourceCardUrl}>{url}</span>
+          </div>
+        </div>
+        <div className={styles.sourceCard}>
+          <div>
+            <span className={styles.sourceCardText}>API URL</span>
+            <span className={styles.sourceCardUrl}>
+              {input_connection?.destination.url}
+            </span>
+          </div>
+        </div>
+        <div className={styles.sourceCard}>
+          <div>
+            <span className={styles.sourceCardText}>Callback URL</span>
+            <span className={styles.sourceCardUrl}>
+              {callback_connection?.destination.url}
+            </span>
+          </div>
+        </div>
+        <div className={styles.sourceCard}>
+          <div>
+            <span className={styles.sourceCardText}>Request Throttle</span>
+            <span className={styles.sourceCardUrl}>
+              {input_connection?.destination.rate_limit} /
+              {input_connection?.destination.rate_limit_period}
+            </span>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

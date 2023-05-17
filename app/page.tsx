@@ -1,47 +1,15 @@
-import styles from "./page.module.css";
-import { retrieveSources } from "@/services/hookdeck";
-import Logs from "@/components/Logs";
+import { retrieveConnections } from "@/services/hookdeck";
 import * as asyncApi from "@/services/asyncapi";
-import { NAME_PREFIX } from "@/services/asyncapi";
+import HomeScreen from "./HomeScreen";
 
 export default async function Home() {
-  const sources = await retrieveSources();
-  const log = await asyncApi.getAllLog();
+  const connections = await retrieveConnections();
 
-  return (
-    <main className={styles.main}>
-      <section>
-        <h1 className={styles.title}>Your APIs</h1>
-        <p className={styles.subtitle}>
-          Turn your slow or unreliable APIs unto an async API. Fire your request
-          and listen for a webhook callback when the API call as succeeded.
-        </p>
+  const initStatus = await asyncApi.getStatus();
 
-        <div>
-          {log.map((logLine) => (
-            <p key={logLine.id}>
-              {logLine.method} {logLine.url}
-            </p>
-          ))}
-        </div>
+  if (initStatus === "uninitialized") {
+    await asyncApi.init();
+  }
 
-        <div className={styles.logLists}>
-          <Logs />
-        </div>
-      </section>
-
-      <section>
-        Search<button>Create</button>
-        {sources.map((source) => (
-          <a
-            key={source.id}
-            className={styles.sourceCard}
-            href={`/${source.name.split(NAME_PREFIX)[1]}`}
-          >
-            {source.name.split(NAME_PREFIX)[1]}
-          </a>
-        ))}
-      </section>
-    </main>
-  );
+  return <HomeScreen connections={connections} />;
 }
