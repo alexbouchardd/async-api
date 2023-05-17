@@ -24,7 +24,7 @@ export default async function APIView({ params }: { params: { api: string } }) {
     (connection) => connection.source.name === `${NAME_PREFIX}callback`
   );
 
-  const url = `htttp://${process.env.NEXT_PUBLIC_VERCEL_URL}/${
+  const url = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/${
     source.name.split(NAME_PREFIX)[1]
   }/proxy`;
 
